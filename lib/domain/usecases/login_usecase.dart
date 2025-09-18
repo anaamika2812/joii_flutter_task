@@ -1,11 +1,14 @@
+
+
+import '../entities/user_entity.dart';
 import '../repositories/auth_repository.dart';
 
 class LoginUseCase {
-  final AuthRepository repository;
+  final AuthRepository _repository;
 
-  LoginUseCase({required this.repository});
+  LoginUseCase(this._repository);
 
-  Future<Map<String, dynamic>> execute(String email, String password) {
-    return repository.login(email, password);
+  Future<User> execute(String email, String password) async {
+    return await _repository.login(email, password);
   }
 }

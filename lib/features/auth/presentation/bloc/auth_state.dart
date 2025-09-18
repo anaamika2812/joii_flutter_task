@@ -1,18 +1,19 @@
-
-import '../../../../domain/entities/user_entity.dart';
-
 abstract class AuthState {}
 
 class AuthInitial extends AuthState {}
 
 class AuthLoading extends AuthState {}
 
-class AuthLoaded extends AuthState {
-  final UserEntity user;
-  AuthLoaded(this.user);
+class AuthAuthenticated extends AuthState {
+  final String userName;
+
+  AuthAuthenticated({required this.userName});
 }
+
+class AuthUnauthenticated extends AuthState {}
 
 class AuthError extends AuthState {
   final String message;
-  AuthError(this.message);
+
+  AuthError({required this.message});
 }

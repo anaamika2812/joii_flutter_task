@@ -1,35 +1,32 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'constants.dart';
 
-class SharedPrefsHelper {
-
-  static Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(tokenKey);
-  }
-
+class StorageHelper {
+  static const String _tokenKey = 'auth_token';
+  static const String _userNameKey = 'user_name';
 
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+    await prefs.setString(_tokenKey, token);
   }
 
-  static Future<bool> saveUser(Map<String, dynamic> user) async {
+  static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.setString(userKey, jsonEncode(user));
+    return prefs.getString(_tokenKey);
   }
 
-  static Future<Map<String, dynamic>?> getUser() async {
+  static Future<void> saveUserName(String name) async {
     final prefs = await SharedPreferences.getInstance();
-    final userString = prefs.getString(userKey);
-    if (userString == null) return null;
-    return jsonDecode(userString);
+    await prefs.setString(_userNameKey, name);
   }
 
-  static Future<bool> clearAuth() async {
+  static Future<String?> getUserName() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.remove(tokenKey);
-    return prefs.remove(userKey);
+    return prefs.getString(_userNameKey);
+  }
+
+  static Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_userNameKey);
   }
 }

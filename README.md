@@ -1,49 +1,61 @@
 # Joii flutter Task 
 
-## Overview
-This is a Flutter app built for the Joii technical interview. It demonstrates clean architecture, BLoC state management, Dio for API integration, GetX for routing, and polished UI with animations.
+# README.md
 
-### Tech Stack
-- **State Management**: BLoC (no Equatable)
-- **Architecture**: Clean (data/domain/presentation layers)
-- **HTTP Client**: Dio
-- **Routing**: GetX
-- **Persistence**: shared_preferences
-- **UI/Animations**: Material Design + fl_chart (animated pie chart)
-- **Testing**: Widget tests (login success/failure)
 
-## Features
-- **Splash Screen**: animation; checks auth persistence and routes accordingly.
-- **Login**: Form with validation; integrates QA API. Success: stores token/user, goes to dashboard. Failure: shows API error Snackbar.
-- **Dashboard**: Shows user name/profile pic. Animated pie chart for demo content. Logout button.
-- **Logout**: Clears data, shows green Snackbar, returns to login.
-- **Manual Criteria**:
-    - Persistence: Kill/reopen app → dashboard if logged in.
-    - Errors: Invalid login shows API message (e.g., "Invalid credentials").
-- **UI**: Responsive, orange-themed, shadows/gradients for polish. Works on iOS/Android.
+This is a simple Flutter app built as per the requirements for the Joii interview task (September 2025).
 
-## Setup & Run
-1. Clone or create project: `flutter create joii_flutter_task`.
-2. Copy files into place.
-3. Install deps: `flutter pub get`.
-4. Run: `flutter run` (use test creds: email=`test@joiicare.com`, pw=`Test@123`).
-5. Test API: Ensure internet; QA endpoint is staging.
+### Features
+- Splash screen with auto-navigation based on login status.
+- Login form (email as username + password) integrated with the QA API[](https://api-staging.joiicare.com/api/login).
+- Dashboard showing logged-in user's name at the top, with an animated pie chart as sample content.
+- Logout button that clears session, shows a toast message, and navigates back to login.
+- Persistent login: After successful login, killing and reopening the app lands directly on the dashboard.
+- Error handling for invalid login attempts (displays API error messages).
+- Clean architecture with layers: presentation, domain, data.
+- BLoC for state management.
+- Dio for API calls.
+- GetX for routing.
+- Integration tests for login success and failure.
+- Good UI/UX with Material Design, Google Fonts, animations, and responsive layout.
 
-## Tests
-- Run: `flutter test`.
-- Covers: Login success (UI loads, no error) & failure (error displayed).
-- Uses Mockito for bloc mocking.
-- 
-## Integration Tests
-- `joii_integration_test.dart` includes:
-  - **Login Success**: Verifies login with `test@joiicare.com` and `Test@123`, navigates to dashboard, and persists after app kill/reopen.
-  - **Login Failure**: Verifies login with `invalid@joii.com` and `wrongpassword`, displays API error message.
-    Run with `flutter test test/integration_test/joii_integration_test.dart`.
+### Dependencies
+- `dio`: For HTTP requests.
+- `flutter_bloc`: For state management.
+- `get`: For routing.
+- `shared_preferences`: For persistent storage (token and user name).
+- `fluttertoast`: For toast messages.
+- `fl_chart`: For animated chart on dashboard.
+- `google_fonts`: For custom fonts.
 
-## Approach Notes
-- **Clean Arch**: Data layer (Dio datasource), Domain (entities/usecases/repos), Presentation (BLoC/pages/widgets).
-- **No DI**: Manual instantiation in providers (e.g., Dio → Repo → UseCase → BLoC).
-- **Error Handling**: Dio exceptions parsed for API messages.
-- **UI Choices**: Pre-filled creds for ease; pie chart for "any content" (animated, simple). Toast via Get.snackbar.
-- **Improvements**: Add more tests, error boundaries, profile pic caching.
+No Equatable or Dependency Injection used as per instructions.
+
+### Project Structure
+- `lib/core/`: Constants and utils (e.g., storage helper).
+- `lib/data/`: Data sources, models, repositories.
+- `lib/domain/`: Entities, repositories (abstract), use cases.
+- `lib/presentation/`: BLoCs, pages, widgets.
+- `lib/routes/`: App routes with GetX.
+- `test/integration/`: Integration tests.
+
+### How to Run
+1. Create a new Flutter project.
+2. Replace `pubspec.yaml` with the provided one and run `flutter pub get`.
+3. Copy the lib/ and test/ folders.
+4. Run on iOS/Android emulator/device: `flutter run`.
+5. For integration tests: `flutter test integration_test/app_test.dart`.
+
+### Approach Notes
+- **Architecture**: Followed clean architecture principles with separation of concerns. Use cases handle business logic, repositories abstract data sources.
+- **State Management**: BLoC for auth states (loading, success, error).
+- **Routing**: GetX for named routes and navigation without context.
+- **Storage**: SharedPreferences to store token and name for persistence.
+- **UI**: Used Material widgets with custom styling, Google Fonts (Roboto), animations (e.g., FadeTransition), and a responsive layout. Dashboard has an animated pie chart showing sample data.
+- **API Integration**: Dio for POST login request. Handles 201 success and errors.
+- **Tests**: Two integration tests for login success (valid creds) and failure (invalid creds).
+- **Edge Cases**: Handles no internet, API errors, invalid inputs.
+
+Test Credentials (from provided):
+- Email: test@joiicare.com
+- Password: Test@123
 

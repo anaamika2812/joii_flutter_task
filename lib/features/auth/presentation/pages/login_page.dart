@@ -1,80 +1,142 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+
+import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/routes/app_routes.dart';
 import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../widgets/login_form.dart';
-import '../../../../data/datasources/remote/auth_remote_datasource.dart';
-import '../../../../data/repositories/auth_repository_impl.dart';
-import '../../../../domain/usecases/login_usecase.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _emailController = TextEditingController(text: 'test@joiicare.com');
+  final _passwordController = TextEditingController(text: 'Test@123');
+  final _formKey = GlobalKey<FormState>();
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthBloc(
-        loginUseCase: LoginUseCase(
-          repository: AuthRepositoryImpl(
-            remoteDataSource: AuthRemoteDataSource(),
-          ),
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.account_circle_rounded, size: 100, color: Colors.orange),
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40),
+              CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.orange[100],
+                child: const Icon(Icons.person, size: 80, color: Colors.orange),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Welcome to Joii',
+                style: GoogleFonts.poppins(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
-                const SizedBox(height: 32),
-                const Text(
-                  'Welcome to Joii',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Sign in to your account',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.grey[600],
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Sign in to your account',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-                const SizedBox(height: 48),
-                const Expanded(child: LoginForm()),
-                BlocConsumer<AuthBloc, AuthState>(
-                  listener: (context, state) {
-                    if (state is AuthLoaded) {
-                      Get.offAllNamed(AppRoutes.dashboard);
-                    } else if (state is AuthError) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.message),
-                          backgroundColor: Colors.red,
+              ),
+              const SizedBox(height: 40),
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      key: const Key('username_field'),
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: const Icon(Icons.email, color: Colors.grey),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
                         ),
-                      );
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is AuthLoading) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: CircularProgressIndicator(color: Colors.orange),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                      ),
+                      validator: (value) => value?.isEmpty ?? true ? 'Enter email' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      key: const Key('password_field'),
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                      ),
+                      validator: (value) => value?.isEmpty ?? true ? 'Enter password' : null,
+                    ),
+                    const SizedBox(height: 24),
+                    BlocConsumer<AuthBloc, AuthState>(
+                      listener: (context, state) {
+                        if (state is AuthAuthenticated) {
+                          Get.offNamed(AppRoutes.dashboard);
+                        } else if (state is AuthError) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+                          );
+                        }
+                      },
+                      builder: (context, state) {
+                        return ElevatedButton(
+                          key: const Key('login_button'),
+                          onPressed: () {
+                            if (_formKey.currentState?.validate() ?? false) {
+                              BlocProvider.of<AuthBloc>(context).add(
+                                LoginEvent(_emailController.text, _passwordController.text),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple[300],
+                            padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: state is AuthLoading
+                              ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                              : Text(
+                            'Sign In',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -1,3 +1,7 @@
+
+import '../entities/user_entity.dart';
+
 abstract class AuthRepository {
-  Future<Map<String, dynamic>> login(String email, String password);
+  Future<User> login(String email, String password);
+  Future<void> logout();
 }

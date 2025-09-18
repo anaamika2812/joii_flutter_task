@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'core/routes/app_routes.dart';
-import 'features/splash/presentation/bloc/splash_bloc.dart';
-import 'features/splash/presentation/pages/splash_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+import 'core/routes/app_routes.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
+
+void main() {
   runApp(const MyApp());
 }
 
@@ -15,22 +15,31 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'Joii App',
-      theme: ThemeData(
-        primarySwatch: Colors.orange,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(create: (context) => AuthBloc()),
+      ],
+      child: GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Joii App',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          textTheme: GoogleFonts.robotoTextTheme(Theme.of(context).textTheme),
+          scaffoldBackgroundColor: Colors.white,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.blue,
+            elevation: 0,
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
           ),
         ),
+        initialRoute: AppRoutes.splash,
+        getPages: AppRoutes.routes,
       ),
-      home: BlocProvider(
-        create: (_) => SplashBloc(),
-        child: const SplashPage(),
-      ),
-      getPages: AppRoutes.routes,
     );
   }
 }
