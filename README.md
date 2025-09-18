@@ -38,7 +38,7 @@ This is a Flutter app built for the Joii technical interview. It demonstrates cl
 - `joii_integration_test.dart` includes:
   - **Login Success**: Verifies login with `test@joiicare.com` and `Test@123`, navigates to dashboard, and persists after app kill/reopen.
   - **Login Failure**: Verifies login with `invalid@joii.com` and `wrongpassword`, displays API error message.
-    Run with `flutter test integration_test/joii_integration_test.dart`.
+    Run with `flutter test test/integration_test/joii_integration_test.dart`.
 
 ## Approach Notes
 - **Clean Arch**: Data layer (Dio datasource), Domain (entities/usecases/repos), Presentation (BLoC/pages/widgets).
