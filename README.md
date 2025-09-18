@@ -23,7 +23,7 @@ This is a Flutter app built for the Joii technical interview. It demonstrates cl
 - **UI**: Responsive, orange-themed, shadows/gradients for polish. Works on iOS/Android.
 
 ## Setup & Run
-1. Clone or create project: `flutter create joii_app`.
+1. Clone or create project: `flutter create joii_flutter_task`.
 2. Copy files into place.
 3. Install deps: `flutter pub get`.
 4. Run: `flutter run` (use test creds: email=`test@joiicare.com`, pw=`Test@123`).
