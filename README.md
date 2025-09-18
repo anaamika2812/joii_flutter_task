@@ -13,7 +13,7 @@ This is a Flutter app built for the Joii technical interview. It demonstrates cl
 - **Testing**: Widget tests (login success/failure)
 
 ## Features
-- **Splash Screen**: 2s branded animation; checks auth persistence and routes accordingly.
+- **Splash Screen**: animation; checks auth persistence and routes accordingly.
 - **Login**: Form with validation; integrates QA API. Success: stores token/user, goes to dashboard. Failure: shows API error Snackbar.
 - **Dashboard**: Shows user name/profile pic. Animated pie chart for demo content. Logout button.
 - **Logout**: Clears data, shows green Snackbar, returns to login.
@@ -47,7 +47,3 @@ This is a Flutter app built for the Joii technical interview. It demonstrates cl
 - **UI Choices**: Pre-filled creds for ease; pie chart for "any content" (animated, simple). Toast via Get.snackbar.
 - **Improvements**: Add more tests, error boundaries, profile pic caching.
 
-Questions? Reach out!
-
-Best,  
-[Your Name]
