@@ -47,7 +47,8 @@ class _LoginFormState extends State<LoginForm> {
             validator: (value) => (value?.isEmpty ?? true) ? 'Please enter your password' : null,
           ),
           const SizedBox(height: 24),
-           Expanded(
+           SizedBox(
+
               child: ElevatedButton(
                 onPressed: _login,
                 child: const Text('Sign In', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
