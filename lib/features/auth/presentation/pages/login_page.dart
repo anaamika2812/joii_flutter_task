@@ -1,13 +1,12 @@
+// lib/presentation/pages/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/routes/app_routes.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,128 +16,128 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _emailController = TextEditingController(text: 'test@joiicare.com');
-  final _passwordController = TextEditingController(text: 'Test@123');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 40),
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: Colors.orange[100],
-                child: const Icon(Icons.person, size: 80, color: Colors.orange),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Welcome to Joii',
-                style: GoogleFonts.poppins(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Sign in to your account',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 40),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      key: const Key('username_field'),
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: const Icon(Icons.email, color: Colors.grey),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                      ),
-                      validator: (value) => value?.isEmpty ?? true ? 'Enter email' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('password_field'),
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock, color: Colors.grey),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                      ),
-                      validator: (value) => value?.isEmpty ?? true ? 'Enter password' : null,
-                    ),
-                    const SizedBox(height: 24),
-                    BlocConsumer<AuthBloc, AuthState>(
-                      listener: (context, state) {
-                        if (state is AuthAuthenticated) {
-                          Get.offNamed(AppRoutes.dashboard);
-                        } else if (state is AuthError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-                          );
-                        }
-                      },
-                      builder: (context, state) {
-                        return ElevatedButton(
-                          key: const Key('login_button'),
-                          onPressed: () {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              BlocProvider.of<AuthBloc>(context).add(
-                                LoginEvent(_emailController.text, _passwordController.text),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple[300],
-                            padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: state is AuthLoading
-                              ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
-                              : Text(
-                            'Sign In',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
+    return BlocProvider.value(
+      value: Get.find<AuthBloc>(), // Provide the existing AuthBloc instance
+      child: Builder(
+        builder: (context) {
+          return Scaffold(
+            backgroundColor: AppColors.backgroundWhite,
+            body: BlocConsumer<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is AuthAuthenticated) {
+                  Get.offNamed('/dashboard');
+                } else if (state is AuthError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message)),
+                  );
+                }
+              },
+              builder: (context, state) {
+                return Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primaryOrange,
+                            ),
+                            child: const Icon(
+                              Icons.person,
                               color: Colors.white,
-                              fontWeight: FontWeight.w600,
+                              size: 50,
                             ),
                           ),
-                        );
-                      },
+                          const SizedBox(height: 20),
+                          const Text(
+                            AppStrings.welcome,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            AppStrings.signIn,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          TextFormField(
+                            key: const Key('email_field'),
+                            controller: _emailController,
+                            decoration: InputDecoration(
+                              labelText: AppStrings.email,
+                              prefixIcon: const Icon(Icons.email),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            validator: (value) => value!.isEmpty ? 'Enter email' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            key: const Key('password_field'),
+                            controller: _passwordController,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              labelText: AppStrings.password,
+                              prefixIcon: const Icon(Icons.lock),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            validator: (value) => value!.isEmpty ? 'Enter password' : null,
+                          ),
+                          const SizedBox(height: 32),
+                          state is AuthLoading
+                              ? const CircularProgressIndicator()
+                              : ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                Get.find<AuthBloc>().add(
+                                  LoginEvent(
+                                    _emailController.text,
+                                    _passwordController.text,
+                                  ),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.secondaryPurple,
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              AppStrings.loginButton,
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }

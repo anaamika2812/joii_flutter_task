@@ -1,3 +1,5 @@
+part of 'auth_bloc.dart';
+
 abstract class AuthState {}
 
 class AuthInitial extends AuthState {}
@@ -5,9 +7,9 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
-  final String userName;
+  final UserEntity user;
 
-  AuthAuthenticated({required this.userName});
+  AuthAuthenticated(this.user);
 }
 
 class AuthUnauthenticated extends AuthState {}
@@ -15,5 +17,5 @@ class AuthUnauthenticated extends AuthState {}
 class AuthError extends AuthState {
   final String message;
 
-  AuthError({required this.message});
+  AuthError(this.message);
 }

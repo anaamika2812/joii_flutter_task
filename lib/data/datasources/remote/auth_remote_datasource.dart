@@ -1,26 +1,28 @@
 import 'package:dio/dio.dart';
 
-import '../../../core/utils/constants.dart';
-import '../../models/user_model.dart';
+import '../../../core/utils/api_endpoints.dart';
+import '../../../domain/entities/user_entity.dart';
 
-class AuthRemoteDataSource {
-  final Dio _dio;
+abstract class AuthRemoteDataSource {
+  Future<UserEntity> login(String email, String password);
+}
 
-  AuthRemoteDataSource(this._dio);
+class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
+  final Dio dio;
 
-  Future<UserModel> login(String email, String password) async {
+  AuthRemoteDataSourceImpl(this.dio);
+
+  @override
+  Future<UserEntity> login(String email, String password) async {
     try {
-      final response = await _dio.post(
-        '${ApiConstants.baseUrl}${ApiConstants.loginEndpoint}',
-        data: FormData.fromMap({'email': email, 'password': password}),
+      final response = await dio.post(
+        ApiEndpoints.login,
+        data: {'email': email, 'password': password},
+        options: Options(contentType: 'application/x-www-form-urlencoded'),
       );
-      if (response.statusCode == 201) {
-        return UserModel.fromJson(response.data['user']);
-      } else {
-        throw Exception(response.data['message'] ?? 'Login failed');
-      }
+      return UserEntity.fromJson(response.data['user']);
     } catch (e) {
-      throw Exception('Error: ${e.toString()}');
+      throw Exception('Login failed: $e');
     }
   }
 }

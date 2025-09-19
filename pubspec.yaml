@@ -19,6 +19,7 @@ dependencies:
   google_fonts: ^6.2.1  # For nice fonts
   mockito: ^5.0.0
   build_runner: ^2.0.0
+  dartz: ^0.10.1
 
 dev_dependencies:
   flutter_test:

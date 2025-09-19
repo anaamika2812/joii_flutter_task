@@ -1,148 +1,222 @@
-import 'package:fl_chart/fl_chart.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/routes/app_routes.dart';
-import '../../../../core/utils/shared_prefs_helper.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-class DashboardPage extends StatefulWidget {
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../bloc/auth_bloc.dart';
+
+
+class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
-  State<DashboardPage> createState() => _DashboardPageState();
-}
-
-class _DashboardPageState extends State<DashboardPage> {
-  String? userName;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserName();
-  }
-
-  Future<void> _loadUserName() async {
-    userName = await StorageHelper.getUserName();
-    setState(() {});
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.orange,
-        elevation: 0,
-        title: Text(
-          'Welcome, ${userName ?? 'User'}',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        actions: [
-          IconButton(
-            key: const Key('logout_button'),
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () {
-              BlocProvider.of<AuthBloc>(context).add(LogoutEvent());
-              Fluttertoast.showToast(msg: 'Logged out successfully');
-              Get.offNamed(AppRoutes.login);
-            },
-          ),
-        ],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.orange, Colors.white],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Dashboard',
-                style: GoogleFonts.poppins(
+    return BlocProvider.value(
+      value: Get.find<AuthBloc>(),
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is AuthUnauthenticated) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.offAllNamed('/login');
+            });
+            return const SizedBox.shrink();
+          }
+
+          if (state is! AuthAuthenticated) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final user = (state).user;
+
+          return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: Text(
+                'Welcome, ${user.name ?? 'User'}',
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: PieChart(
-                      PieChartData(
-                        sections: [
-                          PieChartSectionData(
-                            value: 40,
-                            color: Colors.blue[300],
-                            title: '40%',
-                            titleStyle: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-                          ),
-                          PieChartSectionData(
-                            value: 30,
-                            color: Colors.green[300],
-                            title: '30%',
-                            titleStyle: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-                          ),
-                          PieChartSectionData(
-                            value: 20,
-                            color: Colors.red[300],
-                            title: '20%',
-                            titleStyle: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-                          ),
-                          PieChartSectionData(
-                            value: 10,
-                            color: Colors.yellow[300],
-                            title: '10%',
-                            titleStyle: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-                          ),
-
-                        ],
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 40,
-                        borderData: FlBorderData(show: false),
-                      ),
-                      swapAnimationDuration: const Duration(milliseconds: 800),
-                      swapAnimationCurve: Curves.easeInOut,
-                    ),
-
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: ElevatedButton(
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout, color: Colors.white),
                   onPressed: () {
-                    Get.toNamed(AppRoutes.details);
+                    Get.find<AuthBloc>().add(LogoutEvent());
+                    Fluttertoast.showToast(msg: AppStrings.logoutToast);
+                    Get.offAllNamed('/login');
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple[300],
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ],
+            ),
+            body: Container(
+            height: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFFFA500), Color(0xFFFFFF99)], // Orange to light yellow
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 80), // Offset for app bar
+                      // Profile Card with Avatar
+                      Card(
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        color: Colors.white.withValues(alpha: 0.9),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+
+                              CircleAvatar(
+                                radius: 40,
+                                backgroundImage: user.profilePicture != null
+                                    ? NetworkImage(user.profilePicture!)
+                                    : const NetworkImage(
+                                    'https://via.placeholder.com/150'),
+                                backgroundColor: AppColors.primaryOrange,
+                                child: user.profilePicture == null
+                                    ? Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: Colors.white,
+                                )
+                                    : null,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user.name ?? 'User',
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      user.email ?? 'No email',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Stats Section
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildStatCard(
+                            title: 'Account Status',
+                            value: user.emailVerifiedAt != null ? 'Verified' : 'Not Verified',
+                            icon: Icons.verified_user,
+                          ),
+                          _buildStatCard(
+                            title: '2FA',
+                            value: user.completed2fa == true ? 'Enabled' : 'Disabled',
+                            icon: Icons.security,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      // Animated Content Section
+                      const Text(
+                        'Quick Insights',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      AnimatedContainer(
+                        duration: const Duration(seconds: 1),
+                        height: 150,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppColors.secondaryPurple, Colors.purple[200]!],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Interactive Content Here',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    'View Details',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildStatCard({required String title, required String value, required IconData icon}) {
+    return Expanded(
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            children: [
+              Icon(icon, size: 30, color: AppColors.primaryOrange),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
             ],

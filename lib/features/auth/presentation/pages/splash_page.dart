@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import '../../../../core/routes/app_routes.dart';
+
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -13,84 +13,83 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _opacityAnimation;
-
+class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
-    _controller.forward();
-
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        BlocProvider.of<AuthBloc>(context).add(CheckAuthStatusEvent());
-      }
+      Get.find<AuthBloc>().add(CheckAuthEvent());
     });
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthAuthenticated) {
-          Get.offNamed(AppRoutes.dashboard);
+    return BlocBuilder<AuthBloc, AuthState>(
+      bloc: Get.find<AuthBloc>(), // Provide the bloc instance
+      builder: (context, state) {
+        if (state is AuthLoading) {
+          return Scaffold(
+            backgroundColor: AppColors.primaryOrange,
+            body: const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          );
+        } else if (state is AuthAuthenticated) {
+          Future.microtask(() => Get.offNamed('/dashboard'));
+          return Scaffold(
+            backgroundColor: AppColors.primaryOrange,
+            body: const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          );
         } else if (state is AuthUnauthenticated) {
-          Get.offNamed(AppRoutes.login);
+          Future.microtask(() => Get.offNamed('/login'));
+          return Scaffold(
+            backgroundColor: AppColors.primaryOrange,
+            body: const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          );
         }
-      },
-      child: Scaffold(
-        backgroundColor: Colors.orange,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TweenAnimationBuilder(
-                duration: const Duration(seconds: 2),
-                tween: Tween<double>(begin: 0, end: 1),
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: value,
-                    child: Container(
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20),
-                        ],
-                      ),
-                      child: const Icon(Icons.favorite, size: 60, color: Colors.orange),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 32),
-              const CircularProgressIndicator(color: Colors.white),
-              const SizedBox(height: 16),
-              const Text(
-                'Joii',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-            ],
+        return Scaffold(
+          backgroundColor: AppColors.primaryOrange,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  child: const Icon(
+                    Icons.favorite,
+                    color: AppColors.primaryOrange,
+                    size: 60,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Icon(
+                  Icons.face,
+                  color: Colors.white,
+                  size: 40,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  AppStrings.appName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
-
-      );
-
+        );
+      },
+    );
   }
 }

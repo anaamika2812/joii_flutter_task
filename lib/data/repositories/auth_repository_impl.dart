@@ -1,20 +1,35 @@
 
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../datasources/local/auth_local_datasource.dart';
 import '../datasources/remote/auth_remote_datasource.dart';
 
-class AuthRepositoryImpl implements AuthRepository {
-  final AuthRemoteDataSource _remoteDataSource;
+import 'package:dartz/dartz.dart';
 
-  AuthRepositoryImpl(this._remoteDataSource);
+class AuthRepositoryImpl implements AuthRepository {
+  final AuthRemoteDataSource remoteDataSource;
+  final AuthLocalDataSource localDataSource;
+
+  AuthRepositoryImpl(this.remoteDataSource, this.localDataSource);
 
   @override
-  Future<User> login(String email, String password) async {
-    return await _remoteDataSource.login(email, password);
+  Future<Either<Exception, UserEntity>> login(String email, String password) async {
+    try {
+      final user = await remoteDataSource.login(email, password);
+      await localDataSource.saveUser(user);
+      return Right(user);
+    } catch (e) {
+      return Left(Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<UserEntity?> getUser() async {
+    return await localDataSource.getUser();
   }
 
   @override
   Future<void> logout() async {
-    // No API call needed for logout, just clear local storage
+    await localDataSource.clearUser();
   }
 }

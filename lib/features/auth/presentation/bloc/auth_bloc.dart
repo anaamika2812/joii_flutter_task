@@ -1,53 +1,50 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc/bloc.dart';
 
-import 'package:dio/dio.dart';
-
-import '../../../../core/utils/shared_prefs_helper.dart';
-import '../../../../data/datasources/remote/auth_remote_datasource.dart';
-import '../../../../data/repositories/auth_repository_impl.dart';
+import '../../../../domain/entities/user_entity.dart';
+import '../../../../domain/usecases/get_user_usecase.dart';
 import '../../../../domain/usecases/login_usecase.dart';
 import '../../../../domain/usecases/logout_usecase.dart';
-import 'auth_event.dart';
-import 'auth_state.dart';
+
+
+part 'auth_event.dart';
+part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final LoginUseCase _loginUseCase;
-  final LogoutUseCase _logoutUseCase;
+  final LoginUseCase loginUseCase;
+  final GetUserUseCase getUserUseCase;
+  final LogoutUseCase logoutUseCase;
 
-  AuthBloc()
-      : _loginUseCase = LoginUseCase(AuthRepositoryImpl(AuthRemoteDataSource(Dio()))),
-        _logoutUseCase = LogoutUseCase(AuthRepositoryImpl(AuthRemoteDataSource(Dio()))),
-        super(AuthInitial()) {
-    on<LoginEvent>(_onLogin);
-    on<LogoutEvent>(_onLogout);
-    on<CheckAuthStatusEvent>(_onCheckAuthStatus);
+  AuthBloc({
+    required this.loginUseCase,
+    required this.getUserUseCase,
+    required this.logoutUseCase,
+  }) : super(AuthInitial()) {
+    on<LoginEvent>(_onLoginEvent);
+    on<CheckAuthEvent>(_onCheckAuthEvent);
+    on<LogoutEvent>(_onLogoutEvent);
   }
 
-  Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onLoginEvent(LoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    try {
-      final user = await _loginUseCase.execute(event.email, event.password);
-      await StorageHelper.saveToken('dummy_token'); // Replace with actual token if needed
-      await StorageHelper.saveUserName(user.name);
-      emit(AuthAuthenticated(userName: user.name));
-    } catch (e) {
-      emit(AuthError(message: e.toString()));
-    }
+    final result = await loginUseCase(event.email, event.password);
+    emit(result.fold(
+          (failure) => AuthError(failure.toString()),
+          (user) => AuthAuthenticated(user),
+    ));
   }
 
-  Future<void> _onLogout(LogoutEvent event, Emitter<AuthState> emit) async {
-    await _logoutUseCase.execute();
-    await StorageHelper.clear();
-    emit(AuthUnauthenticated());
-  }
-
-  Future<void> _onCheckAuthStatus(CheckAuthStatusEvent event, Emitter<AuthState> emit) async {
-    final token = await StorageHelper.getToken();
-    final userName = await StorageHelper.getUserName();
-    if (token != null && userName != null) {
-      emit(AuthAuthenticated(userName: userName));
+  Future<void> _onCheckAuthEvent(CheckAuthEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final user = await getUserUseCase();
+    if (user != null) {
+      emit(AuthAuthenticated(user));
     } else {
       emit(AuthUnauthenticated());
     }
+  }
+
+  Future<void> _onLogoutEvent(LogoutEvent event, Emitter<AuthState> emit) async {
+    await logoutUseCase();
+    emit(AuthUnauthenticated());
   }
 }
